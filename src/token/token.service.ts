@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from "node:crypto";
-import { Token } from "@types";
+import { Token, TokenScopes } from "@types";
 import { ITokenRepository } from "@/repositories/interfaces/ITokenRepository";
 import { TokenRepository } from "@/repositories/TokenRepository";
 import { BadRequestError } from "@/core/errors";
@@ -9,7 +9,7 @@ export class TokenService {
 
   async createToken(
     userId: string,
-    scopes: string[],
+    scopes: TokenScopes[],
     expiresInMinutes: number
   ): Promise<Token> {
     if (!userId) throw new BadRequestError("userId is required");

@@ -1,4 +1,4 @@
-# Token Generation API - Challenge Solution
+# Token Generation API - Built with Encore TS
 
 A TypeScript backend service built with Encore.ts for managing access tokens with scopes and expiry times.
 

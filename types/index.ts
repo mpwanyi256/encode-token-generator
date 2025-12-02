@@ -6,7 +6,10 @@ export interface UserTokenData {
   scopes: TokenScopes[];
 }
 
-export interface Token extends UserTokenData {
+export interface Token {
+  id: string;
+  userId: string;
+  scopes: string[];
   createdAt: string;
   expiresAt: string;
   token: string;

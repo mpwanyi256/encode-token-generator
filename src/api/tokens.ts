@@ -6,23 +6,29 @@ import {
   GetTokensResponse,
   Token,
 } from "@types";
+import { validateApiKey, WithAPIKey } from "@/middleware/apiKey";
 
-export const create = api(
+type CreateTokenRequest = CreateTokenParams & WithAPIKey;
+
+export const create = api<CreateTokenRequest, Token>(
   { method: "POST", path: "/api/tokens", expose: true },
-  async (params: CreateTokenParams): Promise<Token> => {
+  async ({ userId, scopes, expiresInMinutes, apiKey }) => {
+    validateApiKey(apiKey);
     const token = await tokenService.createToken(
-      params.userId,
-      params.scopes,
-      params.expiresInMinutes
+      userId,
+      scopes,
+      expiresInMinutes
     );
-
     return token;
   }
 );
 
-export const list = api<GetTokensParams, GetTokensResponse>(
+type ListTokensRequest = GetTokensParams & WithAPIKey;
+
+export const list = api<ListTokensRequest, GetTokensResponse>(
   { method: "GET", path: "/api/tokens", expose: true },
-  async ({ userId }) => {
+  async ({ userId, apiKey }) => {
+    validateApiKey(apiKey);
     const tokens = await tokenService.getActiveTokensByUserId(userId);
     return { tokens };
   }

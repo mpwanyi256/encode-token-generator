@@ -1,8 +1,7 @@
-import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { ITokenRepository } from "./interfaces/ITokenRepository";
-import { Token } from "../../types";
-import { db } from "../db";
-import { DatabaseError } from "../core/errors";
+import { Token } from "@types";
+import { db } from "@/db";
+import { DatabaseError } from "@/core/errors";
 
 export class TokenRepository implements ITokenRepository {
   async create(token: Token): Promise<Token> {
