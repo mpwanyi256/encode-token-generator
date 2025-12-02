@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "encore-mcp": {
+            "args": [
+                "mcp",
+                "run",
+                "--app=token-gen-3ifi"
+            ],
+            "command": "encore"
+        }
+    }
+}
