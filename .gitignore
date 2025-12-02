@@ -4,5 +4,9 @@ encore.gen.cue
 /.encore
 node_modules
 /encore.gen
+.encore
 
 .DS_Store
+.env
+*.log
+dist
