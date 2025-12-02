@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+.encore
+encore.gen
+*.log
+coverage
+

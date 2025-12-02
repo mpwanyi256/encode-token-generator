@@ -1,7 +1,11 @@
 import { api } from "encore.dev/api";
-import { tokenService } from "../token/token.service";
-import { CreateTokenParams } from "../../types";
-import { Token } from "../token/token.interface";
+import { tokenService } from "@/token/token.service";
+import {
+  CreateTokenParams,
+  GetTokensParams,
+  GetTokensResponse,
+  Token,
+} from "@types";
 
 export const create = api(
   { method: "POST", path: "/api/tokens", expose: true },
@@ -13,5 +17,13 @@ export const create = api(
     );
 
     return token;
+  }
+);
+
+export const list = api<GetTokensParams, GetTokensResponse>(
+  { method: "GET", path: "/api/tokens", expose: true },
+  async ({ userId }) => {
+    const tokens = await tokenService.getActiveTokensByUserId(userId);
+    return { tokens };
   }
 );

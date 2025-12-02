@@ -19,8 +19,10 @@ export class InternalError extends APIError {
 }
 
 export class DatabaseError extends APIError {
-  constructor(message: string, public originalError?: any) {
+  constructor(
+    message: string,
+    public originalError?: any
+  ) {
     super(ErrCode.Internal, message);
   }
 }
-

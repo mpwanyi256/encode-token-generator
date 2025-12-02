@@ -1,160 +1,235 @@
-# REST API Starter
+# Token Generation API - Challenge Solution
 
-This is a RESTful API Starter with a single Hello World API endpoint.
+A TypeScript backend service built with Encore.ts for managing access tokens with scopes and expiry times.
 
-## Prerequisites 
+## Features
 
-**Install Encore:**
-- **macOS:** `brew install encoredev/tap/encore`
-- **Linux:** `curl -L https://encore.dev/install.sh | bash`
-- **Windows:** `iwr https://encore.dev/install.ps1 | iex`
+- ✅ Create tokens with custom scopes and expiry times
+- ✅ List non-expired tokens for a specific user
+- ✅ PostgreSQL database with automatic migrations
+- ✅ Type-safe API endpoints with built-in validation
+- ✅ Clean architecture with Repository and Service patterns
+- ✅ Code formatting with Prettier
+- ✅ Linting with ESLint
+- ✅ Path aliases for cleaner imports
 
-## Create app
+## Tech Stack
 
-Create a local app from this template:
+- **Framework**: Encore.ts (TypeScript backend framework)
+- **Database**: PostgreSQL (via Encore's SQLDatabase)
+- **Validation**: Built-in Encore validation with TypeScript types
+- **Code Quality**: ESLint + Prettier
+- **Testing**: Vitest
+
+## Prerequisites
+
+- **Docker**: Required for local database
+- **Node.js**: v20+
+- **Encore CLI**: Install via:
+  - macOS: `brew install encoredev/tap/encore`
+  - Linux: `curl -L https://encore.dev/install.sh | bash`
+  - Windows: `iwr https://encore.dev/install.ps1 | iex`
+
+## Getting Started
+
+### 1. Install Dependencies
 
 ```bash
-encore app create my-app-name --example=ts/hello-world
+npm install
 ```
 
-## Run app locally
-
-Run this command from your application's root folder:
+### 2. Run the Application
 
 ```bash
 encore run
 ```
-### Using the API
 
-To see that your app is running, you can ping the API.
+This will:
+- Start the Encore development server
+- Create and migrate the PostgreSQL database (Docker required)
+- Make the API available at `http://localhost:4000`
+- Open the development dashboard at `http://localhost:9400`
 
-```bash
-curl http://localhost:4000/hello/World
+## API Endpoints
+
+### POST /api/tokens
+
+Create a new access token for a user.
+
+**Request Body:**
+```json
+{
+  "userId": "123",
+  "scopes": ["read", "write"],
+  "expiresInMinutes": 60
+}
 ```
 
-### Local Development Dashboard
+**Validation:**
+- `userId`: Required, non-empty string
+- `scopes`: Required, non-empty array of strings (valid values: "read", "write", "delete")
+- `expiresInMinutes`: Required, positive integer
 
-While `encore run` is running, open [http://localhost:9400/](http://localhost:9400/) to access Encore's [local developer dashboard](https://encore.dev/docs/observability/dev-dash).
+**Response:**
+```json
+{
+  "id": "token_abc123",
+  "userId": "123",
+  "scopes": ["read", "write"],
+  "createdAt": "2025-01-01T10:00:00.000Z",
+  "expiresAt": "2025-01-01T11:00:00.000Z",
+  "token": "9f0c2d6a3b..."
+}
+```
 
-Here you can see traces for all requests that you made, see your architecture diagram (just a single service for this simple example), and view API documentation in the Service Catalog.
+### GET /api/tokens?userId=123
+
+Retrieve all non-expired tokens for a specific user.
+
+**Query Parameters:**
+- `userId`: Required string
+
+**Response:**
+```json
+{
+  "tokens": [
+    {
+      "id": "token_abc123",
+      "userId": "123",
+      "scopes": ["read", "write"],
+      "createdAt": "2025-01-01T10:00:00.000Z",
+      "expiresAt": "2025-01-01T11:00:00.000Z",
+      "token": "9f0c2d6a3b..."
+    }
+  ]
+}
+```
+
+**Note:** Only non-expired tokens are returned (where `expiresAt > current time`).
+
+## Project Structure
+
+```
+token-gen/
+├── src/
+│   ├── api/             # API endpoints
+│   │   └── tokens.ts    # Token endpoints (POST, GET)
+│   ├── core/            # Core utilities
+│   │   └── errors.ts    # Custom error classes
+│   ├── db/              # Database setup
+│   │   ├── index.ts     # Database instance
+│   │   └── migrations/  # SQL migrations
+│   ├── repositories/    # Data access layer
+│   │   ├── interfaces/  # Repository interfaces
+│   │   └── TokenRepository.ts
+│   └── token/           # Business logic
+│       └── token.service.ts
+├── types/               # Centralized type definitions
+│   └── index.ts
+├── encore.service.ts    # Service definition
+└── package.json
+```
+
+## Architecture
+
+The project follows clean architecture principles:
+
+1. **API Layer** (`src/api/`): Handles HTTP requests/responses
+2. **Service Layer** (`src/token/`): Contains business logic and validation
+3. **Repository Layer** (`src/repositories/`): Manages database operations
+4. **Types** (`types/`): Centralized type definitions
+
+### Key Design Decisions
+
+- **Repository Pattern**: Separates data access from business logic
+- **Service Layer**: Encapsulates business rules and validation
+- **Type Safety**: All types defined in centralized `types/` folder
+- **Error Handling**: Custom error classes that map to Encore's APIError
+- **Database Constraints**: Enforces valid scopes at the database level
 
 ## Development
 
-### Add a new service
+### Code Formatting
 
-To create a new microservice, add a file named encore.service.ts in a new directory.
-The file should export a service definition by calling `new Service`, imported from `encore.dev/service`.
+```bash
+# Format code
+npm run format
 
-```ts
-import { Service } from "encore.dev/service";
-
-export default new Service("my-service");
+# Check formatting
+npm run format:check
 ```
 
-Encore will now consider this directory and all its subdirectories as part of the service.
+### Linting
 
-Learn more in the docs: https://encore.dev/docs/ts/primitives/services
+```bash
+# Run linter
+npm run lint
 
-### Add a new endpoint
-
-Create a new `.ts` file in your new service directory and write a regular async function within it. Then to turn it into an API endpoint, use the `api` function from the `encore.dev/api` module. This function designates it as an API endpoint.
-
-Learn more in the docs: https://encore.dev/docs/ts/primitives/defining-apis
-
-### Service-to-service API calls
-
-Calling API endpoints between services looks like regular function calls with Encore.ts.
-The only thing you need to do is import the service you want to call from `~encore/clients` and then call its API endpoints like functions.
-
-In the example below, we import the service `hello` and call the `ping` endpoint using a function call to `hello.ping`:
-
-```ts
-import { hello } from "~encore/clients"; // import 'hello' service
-
-export const myOtherAPI = api({}, async (): Promise<void> => {
-  const resp = await hello.ping({ name: "World" });
-  console.log(resp.message); // "Hello World!"
-});
+# Fix linting issues
+npm run lint:fix
 ```
 
-Learn more in the docs: https://encore.dev/docs/ts/primitives/api-calls
+### Testing
 
-### Add a database
-
-To create a database, import `encore.dev/storage/sqldb` and call `new SQLDatabase`, assigning the result to a top-level variable. For example:
-
-```ts
-import { SQLDatabase } from "encore.dev/storage/sqldb";
-
-// Create the todo database and assign it to the "db" variable
-const db = new SQLDatabase("todo", {
-  migrations: "./migrations",
-});
+```bash
+npm test
 ```
 
-Then create a directory `migrations` inside the service directory and add a migration file `0001_create_table.up.sql` to define the database schema. For example:
+## Database Schema
 
 ```sql
-CREATE TABLE todo_item (
-  id BIGSERIAL PRIMARY KEY,
-  title TEXT NOT NULL,
-  done BOOLEAN NOT NULL DEFAULT false
-  -- etc...
+CREATE TABLE tokens (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    scopes TEXT[] NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    token TEXT NOT NULL
+);
+
+-- Indexes for performance
+CREATE INDEX idx_tokens_user_id ON tokens (user_id);
+CREATE INDEX idx_tokens_expires_at ON tokens (expires_at);
+
+-- Constraint to ensure valid scopes
+ALTER TABLE tokens ADD CONSTRAINT check_scopes CHECK (
+    array_length(scopes, 1) > 0 
+    AND scopes <@ ARRAY['read', 'write', 'delete']::TEXT[]
 );
 ```
 
-Once you've added a migration, restart your app with `encore run` to start up the database and apply the migration. Keep in mind that you need to have [Docker](https://docker.com) installed and running to start the database.
+## Assumptions & Simplifications
 
-Learn more in the docs: https://encore.dev/docs/ts/primitives/databases
-
-### Learn more
-
-There are many more features to explore in Encore.ts, for example:
-
-- [Request Validation](https://encore.dev/docs/ts/primitives/validation)
-- [Streaming APIs](https://encore.dev/docs/ts/primitives/streaming-apis)
-- [Cron jobs](https://encore.dev/docs/ts/primitives/cron-jobs)
-- [Pub/Sub](https://encore.dev/docs/ts/primitives/pubsub)
-- [Object Storage](https://encore.dev/docs/ts/primitives/object-storage)
-- [Secrets](https://encore.dev/docs/ts/primitives/secrets)
-- [Authentication handlers](https://encore.dev/docs/ts/develop/auth)
-- [Middleware](https://encore.dev/docs/ts/develop/middleware)
+1. **User Management**: No user table exists; `userId` is just a string identifier
+2. **Scope Validation**: Scopes are validated to be one of: "read", "write", "delete"
+3. **Token Generation**: Uses cryptographically secure random bytes (32 bytes, hex-encoded)
+4. **Authentication**: Endpoints are public (`expose: true`) for demo purposes
+5. **Response Format**: GET endpoint returns `{ tokens: [...] }` due to Encore's requirement for named interface types
 
 ## Deployment
 
-### Self-hosting
-
-See the [self-hosting instructions](https://encore.dev/docs/self-host/docker-build) for how to use `encore build docker` to create a Docker image and configure it.
-
-### Encore Cloud Platform
-
-Deploy your application to a free staging environment in Encore's development cloud using `git push encore`:
-
+### Local Development
 ```bash
-git add -A .
-git commit -m 'Commit message'
-git push encore
+encore run
 ```
 
-You can also open your app in the [Cloud Dashboard](https://app.encore.dev) to integrate with GitHub, or connect your AWS/GCP account, enabling Encore to automatically handle cloud deployments for you.
-
-## Link to GitHub
-
-Follow these steps to link your app to GitHub:
-
-1. Create a GitHub repo, commit and push the app.
-2. Open your app in the [Cloud Dashboard](https://app.encore.dev).
-3. Go to **Settings ➔ GitHub** and click on **Link app to GitHub** to link your app to GitHub and select the repo you just created.
-4. To configure Encore to automatically trigger deploys when you push to a specific branch name, go to the **Overview** page for your intended environment. Click on **Settings** and then in the section **Branch Push** configure the **Branch name** and hit **Save**.
-5. Commit and push a change to GitHub to trigger a deploy.
-
-[Learn more in the docs](https://encore.dev/docs/how-to/github)
-
-
-## Testing
-
-To run tests, configure the `test` command in your `package.json` to the test runner of your choice, and then use the command `encore test` from the CLI. The `encore test` command sets up all the necessary infrastructure in test mode before handing over to the test runner. [Learn more](https://encore.dev/docs/ts/develop/testing)
-
+### Docker Build
 ```bash
-encore test
+encore build docker token-gen:latest
 ```
+
+### Cloud Deployment
+```bash
+git push encore  # Deploys to Encore Cloud
+```
+
+## Configuration
+
+- **Database**: Configured via `src/db/index.ts`
+- **TypeScript**: Path aliases configured in `tsconfig.json`
+- **ESLint**: Configured in `.eslintrc.json`
+- **Prettier**: Configured in `.prettierrc.json`
+
+## License
+
+MPL-2.0

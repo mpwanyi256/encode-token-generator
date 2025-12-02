@@ -6,10 +6,20 @@
   "license": "MPL-2.0",
   "type": "module",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"types/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"types/**/*.ts\""
   },
   "devDependencies": {
     "@types/node": "^20.5.7",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.7.3",
     "typescript": "^5.2.2",
     "vitest": "^1.5.0"
   },

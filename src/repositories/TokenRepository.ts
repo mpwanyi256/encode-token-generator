@@ -1,7 +1,7 @@
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { ITokenRepository } from "./interfaces/ITokenRepository";
-import { Token } from "../token/token.interface";
-import { db } from "../db"
+import { Token } from "../../types";
+import { db } from "../db";
 import { DatabaseError } from "../core/errors";
 
 export class TokenRepository implements ITokenRepository {
@@ -33,23 +33,22 @@ export class TokenRepository implements ITokenRepository {
         FROM tokens
         WHERE user_id = ${userId} AND expires_at > ${now}
       `;
-      
+
       const tokens: Token[] = [];
       for await (const row of rows) {
         tokens.push({
-            id: row.id,
-            userId: row.user_id,
-            scopes: row.scopes,
-            createdAt: new Date(row.created_at).toISOString(),
-            expiresAt: new Date(row.expires_at).toISOString(),
-            token: row.token
+          id: row.id,
+          userId: row.user_id,
+          scopes: row.scopes,
+          createdAt: new Date(row.created_at).toISOString(),
+          expiresAt: new Date(row.expires_at).toISOString(),
+          token: row.token,
         } as Token);
       }
       return tokens;
     } catch (error: any) {
-        console.error("Error finding tokens:", error);
-        throw new DatabaseError("Failed to find tokens", error);
+      console.error("Error finding tokens:", error);
+      throw new DatabaseError("Failed to find tokens", error);
     }
   }
 }
-
